@@ -11,8 +11,13 @@ from rest_framework import status
 class ArticleViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
+    def get_object(self,pk=None):
+        if pk:
+            return Article.objects.get(pk=pk)
+        return Article.objects.all()
+
     def list(self,request):
-        queryset = Article.objects.all()
+        queryset = self.get_object()
         serializer = ArticleSerializer(queryset,many=True)
         return Response(serializer.data)
 
@@ -24,11 +29,12 @@ class ArticleViewSet(viewsets.ViewSet):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self,request,pk):
-        article = Article.objects.get(pk=pk)
+        article = self.get_object(pk)
         serializer = ArticleSerializer(article)
         return Response(serializer.data)
+
     def update(self,request,pk):
-        article = Article.objects.get(pk=pk)
+        article = self.get_object(pk)
         serializer = ArticleSerializer(article,data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -36,7 +42,7 @@ class ArticleViewSet(viewsets.ViewSet):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self,request,pk):
-        article = Article.objects.get(pk=pk)
+        article = self.get_object(pk)
         serializer = ArticleSerializer(article,data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
