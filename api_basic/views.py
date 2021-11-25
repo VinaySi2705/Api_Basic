@@ -36,17 +36,22 @@ class ArticleViewSet(viewsets.ViewSet):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self,request,pk):
-
-        article=Article.objects.get(pk=pk)
-        data = request.data
-        article.title = data.get('title',article.title)
-        article.author = data.get('author',article.author)
-        article.email = data.get('email',article.email)
-        article.created_date = data.get('created_date',article.created_date)
-        article.content = data.get('content',article.content)
-        article.save()
-        serializer = ArticleSerializer(article)
-        return Response(serializer.data)
+        article = Article.objects.get(pk=pk)
+        serializer = ArticleSerializer(article,data=request.data,partial=True)
+        if serializer.is_valid():
+            serializer.save()
+            return Response(serializer.data)
+        return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
+        # article=Article.objects.get(pk=pk)
+        # data = request.data
+        # article.title = data.get('title',article.title)
+        # article.author = data.get('author',article.author)
+        # article.email = data.get('email',article.email)
+        # article.created_date = data.get('created_date',article.created_date)
+        # article.content = data.get('content',article.content)
+        # article.save()
+        # serializer = ArticleSerializer(article)
+        # return Response(serializer.data)
 
 
 
