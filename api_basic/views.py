@@ -6,18 +6,15 @@ from rest_framework import mixins
 from rest_framework import viewsets
 from rest_framework.response import Response
 from rest_framework import status
+from django.shortcuts import get_object_or_404
+
 #using ViewSet
 
 class ArticleViewSet(viewsets.ViewSet):
     permission_classes = [permissions.IsAuthenticated]
 
-    def get_object(self,pk=None):
-        if pk:
-            return Article.objects.get(pk=pk)
-        return Article.objects.all()
-
     def list(self,request):
-        queryset = self.get_object()
+        queryset = Article.objects.all()
         serializer = ArticleSerializer(queryset,many=True)
         return Response(serializer.data)
 
@@ -29,12 +26,14 @@ class ArticleViewSet(viewsets.ViewSet):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def retrieve(self,request,pk):
-        article = self.get_object(pk)
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset,pk=pk)
         serializer = ArticleSerializer(article)
         return Response(serializer.data)
 
     def update(self,request,pk):
-        article = self.get_object(pk)
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset,pk=pk)
         serializer = ArticleSerializer(article,data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -42,7 +41,8 @@ class ArticleViewSet(viewsets.ViewSet):
         return Response(serializer.errors,status=status.HTTP_400_BAD_REQUEST)
 
     def partial_update(self,request,pk):
-        article = self.get_object(pk)
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset,pk=pk)
         serializer = ArticleSerializer(article,data=request.data,partial=True)
         if serializer.is_valid():
             serializer.save()
@@ -59,7 +59,17 @@ class ArticleViewSet(viewsets.ViewSet):
         # serializer = ArticleSerializer(article)
         # return Response(serializer.data)
 
+    def destroy(self,request,pk):
+        queryset = Article.objects.all()
+        article = get_object_or_404(queryset,pk=pk)
+        article.delete()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
+#using model ViewSet
+
+class ArticleModelViewset(viewsets.ModelViewSet):
+    queryset = Article.objects.all()
+    serializer_class = ArticleSerializer
 
 #using generics
 class ArticleList(generics.ListCreateAPIView):
